@@ -13,6 +13,11 @@ export default defineNuxtConfig({
   css: ['~/assets/main.css'],
   future: { compatibilityVersion: 4 },
   compatibilityDate: '2025-04-02',
+  nitro: {
+    experimental: {
+      tasks: true
+    }
+  },
   hub: {
     database: true
   },
