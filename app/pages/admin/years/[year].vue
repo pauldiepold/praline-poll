@@ -30,6 +30,10 @@ useHead({
 
 // Queries und Mutations
 const { enrichedPersonsQuery } = await import('~/queries/enriched-persons')
+const { availableYearsQuery } = await import('~/queries/available-years')
+
+// Verfügbare Jahre abrufen
+const { data: availableYears } = useQuery(availableYearsQuery)
 
 // Typen importieren
 type EnrichedPerson = {
@@ -111,6 +115,23 @@ const sortDropdownItems = computed(() => [
   }
 ])
 
+// Jahr-Dropdown-Items
+const yearDropdownItems = computed(() => {
+  if (!availableYears.value?.years) return []
+
+  return availableYears.value.years.map(yearValue => ({
+    label: yearValue.toString(),
+    value: yearValue,
+    trailingIcon: yearValue === year ? 'i-lucide-check' : undefined,
+    active: yearValue === year,
+    onSelect() {
+      if (yearValue !== year) {
+        navigateTo(`/admin/years/${yearValue}`)
+      }
+    }
+  }))
+})
+
 // Berechnete Eigenschaften
 const activePersonYears = computed(() => {
   return enrichedPersons.value?.filter(p => p.hasPersonYear && p.personYear?.isParticipating) || []
@@ -181,6 +202,7 @@ const { mutate: toggleParticipation, isLoading: isTogglingParticipation } = useM
   },
   async onSuccess() {
     await queryCache.invalidateQueries(enrichedPersonsQuery(year))
+    await queryCache.invalidateQueries(availableYearsQuery)
     toast.add({
       title: 'Teilnahme erfolgreich aktualisiert',
       color: 'success'
@@ -231,6 +253,7 @@ const { mutate: addPerson, isLoading: isAdding } = useMutation({
   },
   async onSuccess() {
     await queryCache.invalidateQueries(enrichedPersonsQuery(year))
+    await queryCache.invalidateQueries(availableYearsQuery)
     toast.add({
       title: 'Person erfolgreich hinzugefügt',
       color: 'success'
@@ -388,11 +411,32 @@ const handleAddCancel = () => {
 
 <template>
   <div>
+    <!-- Jahr-Auswahl-Karte -->
+    <UCard class="mb-6">
+      <template #header>
+        <h2>
+          Verwaltung von {{ year }}
+        </h2>
+        <UDropdownMenu
+          :items="yearDropdownItems"
+        >
+          <UButton
+            :label="`${year}`"
+            color="primary"
+            variant="outline"
+            trailing-icon="i-lucide-chevron-down"
+            description="Jahr auswählen"
+            aria-label="Jahr auswählen"
+          />
+        </UDropdownMenu>
+      </template>
+    </UCard>
+
     <UCard>
       <template #header>
         <div>
           <h2>
-            Verwaltung der Personen für {{ year }}
+            Personen
           </h2>
         </div>
         <UButton
@@ -501,12 +545,8 @@ const handleAddCancel = () => {
             sticky
             class="flex-1"
           >
-            <template #empty-state>
-              <div class="text-center py-8">
-                <p class="text-gray-500">
-                  Keine Personen gefunden
-                </p>
-              </div>
+            <template #empty>
+              Keine Personen gefunden
             </template>
           </UTable>
 
