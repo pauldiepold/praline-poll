@@ -2,7 +2,7 @@ import { defineQueryOptions } from '@pinia/colada'
 
 export const pralinesQuery = defineQueryOptions((year: number) => ({
   key: ['pralines', year],
-  query: () => $fetch(`/api/years/${year}/pralines`) as Promise<Praline[]>
+  query: () => $fetch(`/api/admin/years/${year}/pralines`) as Promise<Praline[]>
 }))
 
 // Type für Pralinen

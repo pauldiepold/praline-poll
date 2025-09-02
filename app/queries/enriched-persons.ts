@@ -2,7 +2,7 @@ import { defineQueryOptions } from '@pinia/colada'
 
 export const enrichedPersonsQuery = defineQueryOptions((year: number) => ({
   key: ['enriched-persons', year],
-  query: () => $fetch(`/api/years/${year}/persons`) as Promise<EnrichedPerson[]>
+  query: () => $fetch(`/api/admin/years/${year}/persons`) as Promise<EnrichedPerson[]>
 }))
 
 // Type für angereicherte Person mit PersonYear-Daten

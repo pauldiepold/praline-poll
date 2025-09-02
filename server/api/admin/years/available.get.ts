@@ -1,6 +1,8 @@
 import { sql } from 'drizzle-orm'
 
-export default eventHandler(async () => {
+export default eventHandler(async (event) => {
+  await requireUserSession(event)
+
   const db = useDB()
 
   try {

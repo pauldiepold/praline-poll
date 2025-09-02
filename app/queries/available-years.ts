@@ -1,10 +1,10 @@
 import { defineQueryOptions } from '@pinia/colada'
 
-export const availableYearsQuery = defineQueryOptions({
+export const availableYearsQuery = defineQueryOptions(() => ({
   key: ['available-years'],
-  query: () => $fetch('/api/years/available') as Promise<{
+  query: () => $fetch('/api/admin/years/available') as Promise<{
     years: number[]
     currentYear: number
     nextYear: number
   }>
-})
+}))

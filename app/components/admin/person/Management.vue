@@ -64,7 +64,7 @@ const addForm = reactive<Partial<PersonSchema>>({
 
 // Filter und Sortierung
 const globalFilter = ref('')
-const sortColumn: Ref<'firstName' | 'lastName' | 'signature' | 'isParticipating'> = ref('lastName')
+const sortColumn: Ref<'firstName' | 'lastName' | 'signature' | 'isParticipating'> = ref('firstName')
 const sortDirection: Ref<'asc' | 'desc'> = ref('asc')
 
 const sortOptions = [
@@ -153,7 +153,7 @@ const togglingId = ref<number | null>(null)
 const { mutate: toggleParticipation, isLoading: isTogglingParticipation } = useMutation({
   mutation: ({ year, personId, isParticipating }: { year: number, personId: number, isParticipating: boolean }) => {
     togglingId.value = personId
-    return $fetch(`/api/years/${year}/persons/${personId}/participation`, {
+    return $fetch(`/api/admin/years/${year}/persons/${personId}/participation`, {
       method: 'PATCH',
       body: { isParticipating }
     })
@@ -180,7 +180,7 @@ const { mutate: toggleParticipation, isLoading: isTogglingParticipation } = useM
 
 const { mutate: updatePerson, isLoading: isUpdating } = useMutation({
   mutation: ({ id, data }: { id: number, data: PersonSchema }) => {
-    return $fetch(`/api/persons/${id}`, {
+    return $fetch(`/api/admin/persons/${id}`, {
       method: 'PATCH',
       body: data
     })
@@ -204,7 +204,7 @@ const { mutate: updatePerson, isLoading: isUpdating } = useMutation({
 
 const { mutate: addPerson, isLoading: isAdding } = useMutation({
   mutation: ({ data }: { data: PersonSchema }) => {
-    return $fetch(`/api/years/${props.year}/persons`, {
+    return $fetch(`/api/admin/years/${props.year}/persons`, {
       method: 'POST',
       body: data
     })
@@ -228,6 +228,42 @@ const { mutate: addPerson, isLoading: isAdding } = useMutation({
 })
 
 const columns: TableColumn<EnrichedPerson>[] = [
+  {
+    id: 'actions',
+    header: '',
+    enableHiding: false,
+    cell: ({ row }) => {
+      const person = row.original
+
+      return h('div', { class: 'flex items-center gap-2' }, [
+        h(UButton, {
+          'icon': 'i-lucide-edit',
+          'color': 'primary',
+          'variant': 'subtle',
+          'size': 'sm',
+          'aria-label': 'Person bearbeiten',
+          onClick() {
+            personToEdit.value = person
+            Object.assign(editForm, {
+              firstName: person.firstName,
+              lastName: person.lastName
+            })
+            isEditModalOpen.value = true
+          }
+        })
+      ])
+    }
+  },
+  {
+    id: 'name',
+    header: 'Name',
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const person = row.original
+      return h('div', { class: 'font-medium' }, `${person.firstName} ${person.lastName}`)
+    }
+  },
   {
     accessorKey: 'firstName',
     header: 'Vorname',
@@ -294,32 +330,6 @@ const columns: TableColumn<EnrichedPerson>[] = [
         )
       ])
     }
-  },
-  {
-    id: 'actions',
-    header: 'Aktionen',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const person = row.original
-
-      return h('div', { class: 'flex items-center gap-2' }, [
-        h(UButton, {
-          'icon': 'i-lucide-edit',
-          'color': 'primary',
-          'variant': 'ghost',
-          'size': 'sm',
-          'aria-label': 'Person bearbeiten',
-          onClick() {
-            personToEdit.value = person
-            Object.assign(editForm, {
-              firstName: person.firstName,
-              lastName: person.lastName
-            })
-            isEditModalOpen.value = true
-          }
-        })
-      ])
-    }
   }
 ]
 
@@ -328,6 +338,7 @@ const table = useTemplateRef('table')
 // Deutsche Labels für die Spalten
 const getColumnLabel = (columnId: string): string => {
   const labels: Record<string, string> = {
+    name: 'Name',
     firstName: 'Vorname',
     lastName: 'Nachname',
     signature: 'Signatur',
@@ -338,8 +349,10 @@ const getColumnLabel = (columnId: string): string => {
 
 // Standard-Sichtbarkeit der Spalten konfigurieren
 const defaultColumnVisibility = {
-  firstName: true,
-  lastName: true,
+  actions: true,
+  name: true,
+  firstName: false,
+  lastName: false,
   signature: false,
   isParticipating: true
 }

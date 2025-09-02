@@ -67,7 +67,7 @@ const addForm = reactive<Partial<PralineSchema>>({
 // Mutations
 const { mutate: updatePraline, isLoading: isUpdating } = useMutation({
   mutation: ({ id, data }: { id: number, data: PralineSchema }) => {
-    return $fetch(`/api/pralines/${id}`, {
+    return $fetch(`/api/admin/pralines/${id}`, {
       method: 'PATCH',
       body: data
     })
@@ -91,7 +91,7 @@ const { mutate: updatePraline, isLoading: isUpdating } = useMutation({
 
 const { mutate: addPraline, isLoading: isAdding } = useMutation({
   mutation: ({ data }: { data: PralineSchema }) => {
-    return $fetch(`/api/years/${props.year}/pralines`, {
+    return $fetch(`/api/admin/years/${props.year}/pralines`, {
       method: 'POST',
       body: data
     })
@@ -116,7 +116,7 @@ const { mutate: addPraline, isLoading: isAdding } = useMutation({
 // Delete mutation
 const { mutate: deletePraline, isLoading: isDeleting } = useMutation({
   mutation: ({ id }: { id: number }) => {
-    return $fetch(`/api/pralines/${id}`, {
+    return $fetch(`/api/admin/pralines/${id}`, {
       method: 'DELETE'
     })
   },
@@ -242,7 +242,7 @@ const _handleImageUpload = async (event: Event, form: 'edit' | 'add') => {
     const formData = new FormData()
     formData.append('image', file)
 
-    const result = await $fetch('/api/pralines/upload', {
+    const result = await $fetch('/api/admin/pralines/upload', {
       method: 'POST',
       body: formData
     })
@@ -297,7 +297,7 @@ const _handleImageUpload = async (event: Event, form: 'edit' | 'add') => {
 
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
-  target.src = '/api/images/placeholder.jpg' // Fallback to a placeholder image
+  target.src = '/api/admin/images/placeholder.jpg' // Fallback to a placeholder image
   target.alt = 'Fehler beim Laden des Bildes'
 }
 </script>
@@ -378,79 +378,98 @@ const handleImageError = (event: Event) => {
           <div
             v-for="praline in pralines"
             :key="praline.id"
-            class="flex items-start gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+            class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
           >
-            <!-- Bild -->
-            <div class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-              <img
-                v-if="praline.imagePath && praline.imagePath.trim() !== ''"
-                :src="`/api/images/${praline.imagePath}`"
-                :alt="`Bild der Praline ${praline.name}`"
-                width="80"
-                height="80"
-                class="w-full h-full object-cover"
-                loading="lazy"
-                @error="handleImageError"
-              >
-              <div
-                v-else
-                class="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center"
-              >
-                <UIcon
-                  name="i-lucide-image"
-                  class="size-8 text-gray-400"
-                />
-              </div>
-            </div>
+            <div class="flex flex-col md:flex-row md:items-start gap-4">
+              <div class="flex items-center gap-3 md:flex-col md:items-start">
+                <div class="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <img
+                    v-if="praline.imagePath && praline.imagePath.trim() !== ''"
+                    :src="`/api/admin/images/${praline.imagePath}`"
+                    :alt="`Bild der Praline ${praline.name}`"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    @error="handleImageError"
+                  >
+                  <div
+                    v-else
+                    class="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-lucide-image"
+                      class="size-6 md:size-8 text-gray-400"
+                    />
+                  </div>
+                </div>
 
-            <!-- Pralinen-Informationen -->
-            <div class="flex-grow min-w-0">
-              <div class="flex items-center gap-3 mb-2">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {{ praline.name }}
-                </h3>
-                <UBadge
-                  v-if="praline.isVegan"
-                  color="success"
-                  variant="soft"
-                  size="sm"
+                <div class="md:hidden flex-grow min-w-0">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate mb-1">
+                    {{ praline.name }}
+                  </h3>
+                  <UBadge
+                    v-if="praline.isVegan"
+                    color="success"
+                    variant="soft"
+                    size="sm"
+                  >
+                    Vegan
+                  </UBadge>
+                </div>
+              </div>
+
+              <div class="flex-grow min-w-0">
+                <div class="hidden md:flex items-center gap-3 mb-2">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                    {{ praline.name }}
+                  </h3>
+                  <UBadge
+                    v-if="praline.isVegan"
+                    color="success"
+                    variant="soft"
+                    size="sm"
+                  >
+                    Vegan
+                  </UBadge>
+                </div>
+
+                <p
+                  v-if="praline.description"
+                  class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed md:line-clamp-2"
                 >
-                  Vegan
-                </UBadge>
+                  {{ praline.description }}
+                </p>
+                <p
+                  v-else
+                  class="text-gray-400 dark:text-gray-500 text-sm italic"
+                >
+                  Keine Beschreibung vorhanden
+                </p>
               </div>
 
-              <p
-                v-if="praline.description"
-                class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2"
-              >
-                {{ praline.description }}
-              </p>
-              <p
-                v-else
-                class="text-gray-400 dark:text-gray-500 text-sm italic"
-              >
-                Keine Beschreibung vorhanden
-              </p>
-            </div>
-
-            <!-- Edit-Button -->
-            <div class="flex-shrink-0 flex gap-2">
-              <UButton
-                icon="i-lucide-edit"
-                color="primary"
-                variant="ghost"
-                size="sm"
-                aria-label="Praline bearbeiten"
-                @click="handleEdit(praline)"
-              />
-              <UButton
-                icon="i-lucide-trash-2"
-                color="red"
-                variant="ghost"
-                size="sm"
-                aria-label="Praline löschen"
-                @click="handleDelete(praline)"
-              />
+              <div class="flex gap-2 pt-2 md:pt-0 md:flex-shrink-0">
+                <UButton
+                  icon="i-lucide-edit"
+                  color="primary"
+                  variant="subtle"
+                  size="sm"
+                  class="flex-1 md:flex-none"
+                  aria-label="Praline bearbeiten"
+                  @click="handleEdit(praline)"
+                >
+                  Bearbeiten
+                </UButton>
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                  class="flex-1 md:flex-none"
+                  aria-label="Praline löschen"
+                  @click="handleDelete(praline)"
+                >
+                  Löschen
+                </UButton>
+              </div>
             </div>
           </div>
         </div>
@@ -518,7 +537,7 @@ const handleImageError = (event: Event) => {
               >
                 <img
                   v-if="editForm.imagePath && editForm.imagePath.trim() !== ''"
-                  :src="`/api/images/${editForm.imagePath}`"
+                  :src="`/api/admin/images/${editForm.imagePath}`"
                   :alt="`Bild der Praline ${editForm.name || 'Praline'}`"
                   width="80"
                   height="80"
@@ -637,7 +656,7 @@ const handleImageError = (event: Event) => {
               >
                 <img
                   v-if="addForm.imagePath && addForm.imagePath.trim() !== ''"
-                  :src="`/api/images/${addForm.imagePath}`"
+                  :src="`/api/admin/images/${addForm.imagePath}`"
                   :alt="`Bild der Praline ${addForm.name || 'Praline'}`"
                   width="80"
                   height="80"
@@ -709,7 +728,7 @@ const handleImageError = (event: Event) => {
             <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
               <img
                 v-if="pralineToDelete?.imagePath && pralineToDelete.imagePath.trim() !== ''"
-                :src="`/api/images/${pralineToDelete.imagePath}`"
+                :src="`/api/admin/images/${pralineToDelete.imagePath}`"
                 :alt="`Bild der Praline ${pralineToDelete?.name}`"
                 width="64"
                 height="64"

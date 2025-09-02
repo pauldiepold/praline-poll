@@ -1,6 +1,8 @@
 import { useValidatedParams, useValidatedBody, z, zh } from 'h3-zod'
 
 export default eventHandler(async (event) => {
+  await requireUserSession(event)
+
   const { id } = await useValidatedParams(event, {
     id: zh.intAsString
   })

@@ -1,4 +1,6 @@
 export default eventHandler(async (event) => {
+  await requireUserSession(event)
+
   const year = parseInt(getRouterParam(event, 'year') || '')
 
   if (isNaN(year) || year <= 2020 || year > 2050) {

@@ -1,6 +1,8 @@
 import { useValidatedBody, z } from 'h3-zod'
 
 export default eventHandler(async (event) => {
+  await requireUserSession(event)
+
   const { firstName, lastName } = await useValidatedBody(event, {
     firstName: z.string().min(1, 'Vorname ist erforderlich').max(100, 'Vorname kann maximal 100 Zeichen haben'),
     lastName: z.string().min(1, 'Nachname ist erforderlich').max(100, 'Nachname kann maximal 100 Zeichen haben')

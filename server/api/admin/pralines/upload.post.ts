@@ -1,6 +1,8 @@
 import { createError } from 'h3'
 
 export default eventHandler(async (event) => {
+  await requireUserSession(event)
+
   try {
     // Upload verarbeiten
     const uploadResult = await hubBlob().handleUpload(event, {
