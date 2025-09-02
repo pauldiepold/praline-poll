@@ -20,5 +20,3 @@ export type NewPerson = typeof tables.persons.$inferInsert
 export type NewPraline = typeof tables.pralines.$inferInsert
 export type NewPersonYear = typeof tables.personYears.$inferInsert
 export type NewRating = typeof tables.ratings.$inferInsert
-
-export type Todo = typeof tables.todos.$inferSelect

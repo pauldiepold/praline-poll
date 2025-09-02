@@ -1,84 +1,126 @@
-# Manage your Todos with Atidone ☑️
+# Pralinen-Bewertungs-App 🍫
 
-A demonstration using [Nuxt](https://nuxt.com) with server-side rendering on the edge, authentication and database querying using [Cloudflare D1](https://developers.cloudflare.com/d1/) with [Drizzle ORM](https://orm.drizzle.team/).
+Eine Web-Anwendung zur jährlichen Bewertung selbstgemachter Pralinen durch ausgewählte Personen.
 
-[![Deploy to NuxtHub](https://hub.nuxt.com/button.svg)](https://admin.hub.nuxt.com/new?template=todos)
+## 🎯 Projektübersicht
 
-## Features
+### Kernidee
+- Jedes Jahr werden Pralinen gebacken und an Freunde verschickt
+- Jede Person erhält 4-7 Pralinen pro Jahr
+- Über QR-Code/Link gelangen sie zur Bewertungs-App
+- Admins verwalten alles, andere nutzen öffentliche Seiten mit Signatur-URLs
 
-- [Server-Side Rendering on the Edge](https://nuxt.com/blog/nuxt-on-the-edge)
-- Authentication backed-in using [nuxt-auth-utils](https://github.com/atinux/nuxt-auth-utils)
-- Leverage [Cloudflare D1](https://developers.cloudflare.com/d1/) as database with [drizzle ORM](https://orm.drizzle.team/) using [`hubDatabase()`](https://hub.nuxt.com/docs/storage/database)
-- [Automatic database migrations](https://hub.nuxt.com/docs/features/database#database-migrations) in development & when deploying
-- User interface made with [Nuxt UI](https://ui.nuxt.com)
-- Embed [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview/) in the [Nuxt DevTools](https://devtools.nuxt.com)
-- Cache invalidation and Optimistic UI with [Pinia Colada](https://pinia-colada.esm.dev)
+### Hauptfunktionen
+- Admin-Panel zur Verwaltung von Personen, Jahren und Pralinen
+- Öffentliche Bewertungsseiten mit eindeutigen Signaturen
+- Einzelbewertung von Pralinen (1-5 Sterne) + generelles Feedback
+- Automatische QR-Code/Link-Generierung
+- Persistente Datenspeicherung über Jahre hinweg
 
-## Live demo
+## 🔧 Tech Stack
 
-https://todos.nuxt.dev
+### Core Framework
+- **Nuxt 3** mit NuxtHub
+- **Deployment**: Cloudflare Pages
+- **Database**: Cloudflare D1 (SQLite)
+- **File Storage**: Cloudflare R2 Bucket für Pralinbilder
+- **Authentication**: OAuth mit GitHub (nur für Admins)
 
-https://github.com/atinux/atidone/assets/904724/5f3bee55-dbae-4329-8057-7d0e16e92f81
+### Frontend
+- **Styling**: Tailwind CSS + NuxtUI
+- **Language**: Deutsch (einsprachig)
+- **Responsive**: Mobile-first Design
+- **Images**: Automatische Optimierung über Nuxt
 
-To see an example using Passkeys (WebAuthn) for authentication, checkout [todo-passkeys](https://github.com/atinux/todo-passkeys).
+### Features
+- **Image Upload**: Drag & Drop für Pralinbilder
+- **QR Code Generation**: Automatisch für jede Person/Jahr Kombination
+- **Form Handling**: Reactive Forms mit Validierung
+- **Modal System**: Für Pralin-Bewertung
 
-## Setup
+## 📋 Detaillierte Anforderungen
 
-Make sure to install the dependencies using [pnpm](https://pnpm.io/):
+Alle detaillierten Anforderungen, Datenmodelle und Spezifikationen findest du in der [requirements.md](./requirements.md).
+
+## 🚀 Setup
+
+### Abhängigkeiten installieren
 
 ```bash
 pnpm i
 ```
 
-Create a [GitHub Oauth Application](https://github.com/settings/applications/new) with:
-- Homepage url: `http://localhost:3000`
-- Callback url: `http://localhost:3000/api/auth/github`
+### GitHub OAuth konfigurieren
 
-Add the variables in the `.env` file:
+Erstelle eine [GitHub OAuth Application](https://github.com/settings/applications/new) mit:
+- Homepage URL: `http://localhost:3000`
+- Callback URL: `http://localhost:3000/api/auth/github`
 
-```bash
-NUXT_OAUTH_GITHUB_CLIENT_ID="my-github-oauth-app-id"
-NUXT_OAUTH_GITHUB_CLIENT_SECRET="my-github-oauth-app-secret"
-```
-
-To create sealed sessions, you also need to add `NUXT_SESSION_PASSWORD` in the `.env` with at least 32 characters:
+Füge die Variablen in der `.env` Datei hinzu:
 
 ```bash
-NUXT_SESSION_PASSWORD="your-super-long-secret-for-session-encryption"
+NUXT_OAUTH_GITHUB_CLIENT_ID="deine-github-oauth-app-id"
+NUXT_OAUTH_GITHUB_CLIENT_SECRET="dein-github-oauth-app-secret"
 ```
 
-## Development
+### Session-Verschlüsselung
 
-Start the development server on http://localhost:3000
+Für verschlüsselte Sessions benötigst du `NUXT_SESSION_PASSWORD` in der `.env` mit mindestens 32 Zeichen:
+
+```bash
+NUXT_SESSION_PASSWORD="dein-super-langer-geheimer-schlüssel-für-session-verschlüsselung"
+```
+
+## 🛠️ Entwicklung
+
+Starte den Entwicklungsserver auf http://localhost:3000:
 
 ```bash
 npm run dev
 ```
 
-In the Nuxt DevTools, you can see your tables by clicking on the Hub Database tab:
+### Datenbank-Migrationen
 
-https://github.com/atinux/atidone/assets/904724/7ece3f10-aa6f-43d8-a941-7ca549bc208b
+Generiere neue Datenbank-Migrationen:
 
-## Deploy
+```bash
+pnpm db:generate
+```
 
-You can deploy this project on your Cloudflare account for free and with zero configuration using [NuxtHub](https://hub.nuxt.com).
+## 🚀 Deployment
+
+### NuxtHub (Empfohlen)
+
+Du kannst dieses Projekt kostenlos und ohne Konfiguration auf deinem Cloudflare-Account mit [NuxtHub](https://hub.nuxt.com) deployen:
 
 ```bash
 npx nuxthub deploy
 ```
 
-It's also possible to leverage Cloudflare Pages CI for deploying, learn more about the different options on https://hub.nuxt.com/docs/getting-started/deploy
+### Cloudflare Pages CI
 
-## Remote Storage
+Es ist auch möglich, Cloudflare Pages CI für das Deployment zu nutzen. Erfahre mehr über die verschiedenen Optionen auf https://hub.nuxt.com/docs/getting-started/deploy
 
-Once you deployed your project, you can connect to your remote database locally running:
-  
+## 🌐 Remote Storage
+
+Sobald du dein Projekt deployed hast, kannst du dich mit deiner Remote-Datenbank verbinden:
+
 ```bash
 pnpm dev --remote
 ```
 
-Learn more about remote storage on https://hub.nuxt.com/docs/getting-started/remote-storage
+Erfahre mehr über Remote Storage auf https://hub.nuxt.com/docs/getting-started/remote-storage
 
-## License
+## 📱 Features
+
+- **Server-Side Rendering on the Edge** mit Nuxt
+- **Authentication** über nuxt-auth-utils
+- **Cloudflare D1** als Datenbank mit Drizzle ORM
+- **Automatische Datenbank-Migrationen** in der Entwicklung & beim Deployment
+- **Nuxt UI** für die Benutzeroberfläche
+- **Drizzle Studio** in den Nuxt DevTools eingebettet
+- **Cache-Invalidierung** und Optimistic UI mit Pinia Colada
+
+## 📄 Lizenz
 
 [MIT License](./LICENSE)
