@@ -34,11 +34,16 @@ const pralineToEdit = ref<Praline | null>(null)
 // Add modal state
 const isAddModalOpen = ref(false)
 
+// Delete modal state
+const isDeleteModalOpen = ref(false)
+const pralineToDelete = ref<Praline | null>(null)
+
 // Zod schema for form validation
 const pralineSchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name kann maximal 100 Zeichen haben'),
   description: z.string().max(500, 'Beschreibung kann maximal 500 Zeichen haben').optional(),
-  isVegan: z.boolean()
+  isVegan: z.boolean(),
+  imagePath: z.string().optional()
 })
 
 type PralineSchema = z.output<typeof pralineSchema>
@@ -47,14 +52,16 @@ type PralineSchema = z.output<typeof pralineSchema>
 const editForm = reactive<Partial<PralineSchema>>({
   name: '',
   description: '',
-  isVegan: false
+  isVegan: false,
+  imagePath: ''
 })
 
 // Add form state
 const addForm = reactive<Partial<PralineSchema>>({
   name: '',
   description: '',
-  isVegan: false
+  isVegan: false,
+  imagePath: ''
 })
 
 // Mutations
@@ -106,16 +113,57 @@ const { mutate: addPraline, isLoading: isAdding } = useMutation({
   }
 })
 
+// Delete mutation
+const { mutate: deletePraline, isLoading: isDeleting } = useMutation({
+  mutation: ({ id }: { id: number }) => {
+    return $fetch(`/api/pralines/${id}`, {
+      method: 'DELETE'
+    })
+  },
+  async onSuccess() {
+    await queryCache.invalidateQueries({ key: ['pralines', props.year] })
+    toast.add({
+      title: 'Praline erfolgreich gelöscht',
+      color: 'success'
+    })
+    handleDeleteCancel()
+  },
+  onError(err: unknown) {
+    console.error(err)
+    let errorMessage = 'Fehler beim Löschen der Praline'
+
+    if (err && typeof err === 'object' && 'data' in err) {
+      const errorData = (err as { data?: { statusMessage?: string } }).data
+      if (errorData?.statusMessage) {
+        errorMessage = errorData.statusMessage
+      }
+    }
+
+    toast.add({
+      title: 'Fehler beim Löschen der Praline',
+      description: errorMessage,
+      color: 'error'
+    })
+  }
+})
+
 // Form handlers
 const handleEditSubmit = async (event: FormSubmitEvent<PralineSchema>) => {
   if (!pralineToEdit.value) return
-  updatePraline({ id: pralineToEdit.value.id, data: event.data })
+
+  // Stelle sicher, dass imagePath mitgesendet wird
+  const dataToSend = {
+    ...event.data,
+    imagePath: editForm.imagePath || event.data.imagePath
+  }
+
+  updatePraline({ id: pralineToEdit.value.id, data: dataToSend })
 }
 
 const handleEditCancel = () => {
   isEditModalOpen.value = false
   pralineToEdit.value = null
-  Object.assign(editForm, { name: '', description: '', isVegan: false })
+  Object.assign(editForm, { name: '', description: '', isVegan: false, imagePath: '' })
 }
 
 const handleAddSubmit = async (event: FormSubmitEvent<PralineSchema>) => {
@@ -124,7 +172,7 @@ const handleAddSubmit = async (event: FormSubmitEvent<PralineSchema>) => {
 
 const handleAddCancel = () => {
   isAddModalOpen.value = false
-  Object.assign(addForm, { name: '', description: '', isVegan: false })
+  Object.assign(addForm, { name: '', description: '', isVegan: false, imagePath: '' })
 }
 
 const handleEdit = (praline: Praline) => {
@@ -132,9 +180,125 @@ const handleEdit = (praline: Praline) => {
   Object.assign(editForm, {
     name: praline.name,
     description: praline.description || '',
-    isVegan: praline.isVegan
+    isVegan: praline.isVegan,
+    imagePath: praline.imagePath || ''
   })
   isEditModalOpen.value = true
+}
+
+// Delete handlers
+const handleDelete = (praline: Praline) => {
+  pralineToDelete.value = praline
+  isDeleteModalOpen.value = true
+}
+
+const handleDeleteCancel = () => {
+  isDeleteModalOpen.value = false
+  pralineToDelete.value = null
+}
+
+const handleDeleteConfirm = () => {
+  if (!pralineToDelete.value) return
+  deletePraline({ id: pralineToDelete.value.id })
+}
+
+// Upload functionality
+
+const _handleImageUpload = async (event: Event, form: 'edit' | 'add') => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  // Dateivalidierung
+  const maxSize = 8 * 1024 * 1024 // 8MB
+  if (file.size > maxSize) {
+    toast.add({
+      title: 'Datei zu groß',
+      description: 'Das Bild darf maximal 8MB groß sein',
+      color: 'error'
+    })
+    return
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  if (!allowedTypes.includes(file.type)) {
+    toast.add({
+      title: 'Ungültiger Dateityp',
+      description: 'Nur JPG, PNG und WebP Dateien sind erlaubt',
+      color: 'error'
+    })
+    return
+  }
+
+  try {
+    // Loading-Status anzeigen
+    const loadingToast = toast.add({
+      title: 'Bild wird hochgeladen...',
+      description: 'Bitte warten',
+      color: 'primary'
+    })
+
+    const formData = new FormData()
+    formData.append('image', file)
+
+    const result = await $fetch('/api/pralines/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    // Loading-Toast entfernen
+    toast.remove(loadingToast.id)
+
+    if (result && Array.isArray(result) && result[0] && result[0].pathname) {
+      const imagePath = result[0].pathname
+
+      if (form === 'edit') {
+        editForm.imagePath = imagePath
+      }
+      else {
+        addForm.imagePath = imagePath
+      }
+
+      toast.add({
+        title: 'Bild erfolgreich hochgeladen',
+        color: 'success'
+      })
+    }
+    else {
+      toast.add({
+        title: 'Upload fehlgeschlagen',
+        description: 'Unerwartetes Ergebnis vom Server',
+        color: 'error'
+      })
+    }
+  }
+  catch (error) {
+    console.error('Upload error:', error)
+
+    let errorMessage = 'Bitte versuche es erneut'
+    if (error && typeof error === 'object' && 'data' in error) {
+      const errorData = (error as { data?: { statusMessage?: string } }).data
+      if (errorData?.statusMessage) {
+        errorMessage = errorData.statusMessage
+      }
+    }
+
+    toast.add({
+      title: 'Fehler beim Hochladen des Bildes',
+      description: errorMessage,
+      color: 'error'
+    })
+  }
+
+  // Input zurücksetzen
+  target.value = ''
+}
+
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  target.src = '/api/images/placeholder.jpg' // Fallback to a placeholder image
+  target.alt = 'Fehler beim Laden des Bildes'
 }
 </script>
 
@@ -216,12 +380,27 @@ const handleEdit = (praline: Praline) => {
             :key="praline.id"
             class="flex items-start gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
           >
-            <!-- Bild-Platzhalter -->
-            <div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-              <UIcon
-                name="i-lucide-image"
-                class="size-8 text-gray-400"
-              />
+            <!-- Bild -->
+            <div class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <img
+                v-if="praline.imagePath && praline.imagePath.trim() !== ''"
+                :src="`/api/images/${praline.imagePath}`"
+                :alt="`Bild der Praline ${praline.name}`"
+                width="80"
+                height="80"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                @error="handleImageError"
+              >
+              <div
+                v-else
+                class="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-lucide-image"
+                  class="size-8 text-gray-400"
+                />
+              </div>
             </div>
 
             <!-- Pralinen-Informationen -->
@@ -255,7 +434,7 @@ const handleEdit = (praline: Praline) => {
             </div>
 
             <!-- Edit-Button -->
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 flex gap-2">
               <UButton
                 icon="i-lucide-edit"
                 color="primary"
@@ -263,6 +442,14 @@ const handleEdit = (praline: Praline) => {
                 size="sm"
                 aria-label="Praline bearbeiten"
                 @click="handleEdit(praline)"
+              />
+              <UButton
+                icon="i-lucide-trash-2"
+                color="red"
+                variant="ghost"
+                size="sm"
+                aria-label="Praline löschen"
+                @click="handleDelete(praline)"
               />
             </div>
           </div>
@@ -317,6 +504,55 @@ const handleEdit = (praline: Praline) => {
               v-model="editForm.isVegan"
               label="Diese Praline ist vegan"
             />
+          </UFormField>
+
+          <UFormField
+            label="Bild"
+            name="imagePath"
+          >
+            <div class="space-y-4">
+              <!-- Aktuelles Bild anzeigen -->
+              <div
+                v-if="editForm.imagePath"
+                class="flex items-center gap-3"
+              >
+                <img
+                  v-if="editForm.imagePath && editForm.imagePath.trim() !== ''"
+                  :src="`/api/images/${editForm.imagePath}`"
+                  :alt="`Bild der Praline ${editForm.name || 'Praline'}`"
+                  width="80"
+                  height="80"
+                  class="rounded-lg object-cover"
+                  loading="lazy"
+                  @error="handleImageError"
+                >
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  @click="editForm.imagePath = ''"
+                >
+                  Bild entfernen
+                </UButton>
+              </div>
+
+              <!-- Datei-Upload -->
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Neues Bild hochladen
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+                  @change="(event: Event) => _handleImageUpload(event, 'edit')"
+                >
+                <p class="text-xs text-gray-500">
+                  JPG, PNG oder WebP (max. 8MB)
+                </p>
+              </div>
+            </div>
           </UFormField>
 
           <div class="flex justify-end gap-3 pt-4">
@@ -389,6 +625,55 @@ const handleEdit = (praline: Praline) => {
             />
           </UFormField>
 
+          <UFormField
+            label="Bild"
+            name="imagePath"
+          >
+            <div class="space-y-4">
+              <!-- Aktuelles Bild anzeigen -->
+              <div
+                v-if="addForm.imagePath"
+                class="flex items-center gap-3"
+              >
+                <img
+                  v-if="addForm.imagePath && addForm.imagePath.trim() !== ''"
+                  :src="`/api/images/${addForm.imagePath}`"
+                  :alt="`Bild der Praline ${addForm.name || 'Praline'}`"
+                  width="80"
+                  height="80"
+                  class="rounded-lg object-cover"
+                  loading="lazy"
+                  @error="handleImageError"
+                >
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  @click="addForm.imagePath = ''"
+                >
+                  Bild entfernen
+                </UButton>
+              </div>
+
+              <!-- Datei-Upload -->
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Bild hochladen
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/80"
+                  @change="(event: Event) => _handleImageUpload(event, 'add')"
+                >
+                <p class="text-xs text-gray-500">
+                  JPG, PNG oder WebP (max. 8MB)
+                </p>
+              </div>
+            </div>
+          </UFormField>
+
           <div class="flex justify-end gap-3 pt-4">
             <UButton
               color="neutral"
@@ -407,6 +692,103 @@ const handleEdit = (praline: Praline) => {
             </UButton>
           </div>
         </UForm>
+      </template>
+    </UModal>
+
+    <!-- Delete Modal -->
+    <UModal
+      v-model:open="isDeleteModalOpen"
+      title="Praline löschen"
+      description="Bist du sicher, dass du diese Praline löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden."
+      :close="false"
+    >
+      <template #body>
+        <div class="space-y-4">
+          <div class="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <!-- Bild -->
+            <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+              <img
+                v-if="pralineToDelete?.imagePath && pralineToDelete.imagePath.trim() !== ''"
+                :src="`/api/images/${pralineToDelete.imagePath}`"
+                :alt="`Bild der Praline ${pralineToDelete?.name}`"
+                width="64"
+                height="64"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                @error="handleImageError"
+              >
+              <div
+                v-else
+                class="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-lucide-image"
+                  class="size-6 text-gray-400"
+                />
+              </div>
+            </div>
+
+            <!-- Pralinen-Informationen -->
+            <div class="flex-grow">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                {{ pralineToDelete?.name }}
+              </h3>
+              <p
+                v-if="pralineToDelete?.description"
+                class="text-gray-600 dark:text-gray-400 text-sm"
+              >
+                {{ pralineToDelete.description }}
+              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <UBadge
+                  v-if="pralineToDelete?.isVegan"
+                  color="success"
+                  variant="soft"
+                  size="sm"
+                >
+                  Vegan
+                </UBadge>
+                <span class="text-sm text-gray-500">
+                  Jahr {{ pralineToDelete?.year }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <UIcon
+                name="i-lucide-alert-triangle"
+                class="size-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+              />
+              <div class="text-sm text-amber-800 dark:text-amber-200">
+                <p class="font-medium mb-1">
+                  Wichtiger Hinweis:
+                </p>
+                <p>Pralinen können nur gelöscht werden, wenn noch keine Bewertungen abgegeben wurden. Sobald Teilnehmer eine Praline bewertet haben, ist das Löschen nicht mehr möglich.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <UButton
+            color="neutral"
+            variant="soft"
+            @click="handleDeleteCancel"
+          >
+            Abbrechen
+          </UButton>
+          <UButton
+            color="red"
+            type="button"
+            :loading="isDeleting"
+            :disabled="isDeleting"
+            @click="handleDeleteConfirm"
+          >
+            Praline löschen
+          </UButton>
+        </div>
       </template>
     </UModal>
   </div>

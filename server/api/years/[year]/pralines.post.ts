@@ -1,10 +1,11 @@
 import { useValidatedBody, z } from 'h3-zod'
 
 export default eventHandler(async (event) => {
-  const { name, description, isVegan } = await useValidatedBody(event, {
+  const { name, description, isVegan, imagePath } = await useValidatedBody(event, {
     name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name kann maximal 100 Zeichen haben'),
     description: z.string().max(500, 'Beschreibung kann maximal 500 Zeichen haben').optional(),
-    isVegan: z.boolean().default(false)
+    isVegan: z.boolean().default(false),
+    imagePath: z.string().optional()
   })
 
   const year = parseInt(getRouterParam(event, 'year') || '')
@@ -28,7 +29,7 @@ export default eventHandler(async (event) => {
         name: name.trim(),
         description: description?.trim() || null,
         isVegan: isVegan || false,
-        imagePath: '/placeholder.jpg', // Platzhalter für später
+        imagePath: imagePath || '',
         createdAt: now,
         updatedAt: now
       })

@@ -5,10 +5,11 @@ export default eventHandler(async (event) => {
     id: zh.intAsString
   })
 
-  const { name, description, isVegan } = await useValidatedBody(event, {
+  const { name, description, isVegan, imagePath } = await useValidatedBody(event, {
     name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name kann maximal 100 Zeichen haben').optional(),
     description: z.string().max(500, 'Beschreibung kann maximal 500 Zeichen haben').optional(),
-    isVegan: z.boolean().optional()
+    isVegan: z.boolean().optional(),
+    imagePath: z.string().optional()
   })
 
   try {
@@ -27,6 +28,10 @@ export default eventHandler(async (event) => {
 
     if (isVegan !== undefined) {
       updateData.isVegan = isVegan
+    }
+
+    if (imagePath !== undefined) {
+      updateData.imagePath = imagePath
     }
 
     // Praline aktualisieren
