@@ -21,11 +21,9 @@ Eine Web-Anwendung zur jährlichen Bewertung selbstgemachter Pralinen durch ausg
 
 ### Year (Jahr)
 ```sql
-- id: INTEGER PRIMARY KEY
-- year: INTEGER NOT NULL UNIQUE (2024, 2025, etc.)
-- name: TEXT NOT NULL ("Pralinen 2024")
-- created_at: DATETIME
-- updated_at: DATETIME
+- Jahr wird direkt als INTEGER verwendet (2024, 2025, etc.)
+- Keine separate Year-Tabelle, Jahr wird in anderen Tabellen referenziert
+- Validierung: Jahr muss > 2020 und <= 2050 sein
 ```
 
 ### Person
@@ -41,7 +39,7 @@ Eine Web-Anwendung zur jährlichen Bewertung selbstgemachter Pralinen durch ausg
 ```sql
 - id: INTEGER PRIMARY KEY
 - person_id: INTEGER NOT NULL → Person.id
-- year_id: INTEGER NOT NULL → Year.id
+- year: INTEGER NOT NULL (direktes Jahr, nicht Foreign Key)
 - signature: TEXT NOT NULL (6 Zeichen alphanumerisch, unique pro Jahr)
 - is_participating: BOOLEAN NOT NULL DEFAULT false
 - favorite_chocolate_id: INTEGER → Praline.id (nullable)
@@ -50,14 +48,14 @@ Eine Web-Anwendung zur jährlichen Bewertung selbstgemachter Pralinen durch ausg
 - created_at: DATETIME
 - updated_at: DATETIME
 
-UNIQUE(person_id, year_id)
-UNIQUE(signature, year_id)
+UNIQUE(person_id, year)
+UNIQUE(signature, year)
 ```
 
 ### Praline
 ```sql
 - id: INTEGER PRIMARY KEY
-- year_id: INTEGER NOT NULL → Year.id
+- year: INTEGER NOT NULL (direktes Jahr, nicht Foreign Key)
 - name: TEXT NOT NULL
 - image_path: TEXT NOT NULL (Pfad zu R2 Storage)
 - is_vegan: BOOLEAN NOT NULL DEFAULT false

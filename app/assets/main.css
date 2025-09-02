@@ -4,3 +4,13 @@
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
 }
+
+
+button,
+[role='button'] {
+  cursor: pointer;
+}
+
+:disabled {
+  cursor: default;
+}

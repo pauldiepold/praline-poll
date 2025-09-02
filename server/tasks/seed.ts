@@ -1,15 +1,3 @@
-import { useDB, tables, eq } from '../utils/db'
-
-// Helper function to generate random signature
-function generateSignature(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
-
 export default defineTask({
   meta: {
     name: 'db:seed',
@@ -70,7 +58,6 @@ export default defineTask({
       personYearsData.push({
         personId: persons[i].id,
         year: 2024,
-        signature: generateSignature(),
         isParticipating: true,
         createdAt: now,
         updatedAt: now
@@ -82,7 +69,6 @@ export default defineTask({
       personYearsData.push({
         personId: persons[i].id,
         year: 2025,
-        signature: generateSignature(),
         isParticipating: true,
         createdAt: now,
         updatedAt: now
@@ -90,7 +76,7 @@ export default defineTask({
     }
 
     // PersonYears in Batches einfügen
-    const personYears = []
+    const personYears: PersonYear[] = []
     const batchSize = 10
     for (let i = 0; i < personYearsData.length; i += batchSize) {
       const batch = personYearsData.slice(i, i + batchSize)
@@ -124,7 +110,7 @@ export default defineTask({
     }
 
     // Pralinen in Batches einfügen
-    const pralines = []
+    const pralines: Praline[] = []
     const pralineBatchSize = 10
     for (let i = 0; i < pralinesData.length; i += pralineBatchSize) {
       const batch = pralinesData.slice(i, i + pralineBatchSize)
@@ -138,7 +124,7 @@ export default defineTask({
     const ratingData = []
 
     // Helper function to create ratings for a person in a specific year
-    function createRatingsForPersonYear(personYear: any, pralinesForYear: any[], ratingCount: number, personIndex: number) {
+    function createRatingsForPersonYear(personYear: typeof personYears[0], pralinesForYear: typeof pralines, ratingCount: number, personIndex: number) {
       const ratings = []
       for (let i = 0; i < ratingCount; i++) {
         const rating = Math.floor(Math.random() * 5) + 1 as 1 | 2 | 3 | 4 | 5

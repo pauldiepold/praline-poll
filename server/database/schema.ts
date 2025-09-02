@@ -1,6 +1,17 @@
 import { sqliteTable, text, integer, unique } from 'drizzle-orm/sqlite-core'
 import { relations } from 'drizzle-orm'
 
+// Helper function to generate unique string
+function generateUniqueString(length: number = 6): string {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let uniqueString = ''
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length)
+    uniqueString += characters.charAt(randomIndex)
+  }
+  return uniqueString
+}
+
 // Person
 export const persons = sqliteTable('persons', {
   id: integer('id').primaryKey(),
@@ -27,7 +38,7 @@ export const personYears = sqliteTable('person_years', {
   id: integer('id').primaryKey(),
   personId: integer('person_id').notNull().references(() => persons.id),
   year: integer('year').notNull(),
-  signature: text('signature').notNull(),
+  signature: text('signature').notNull().$default(() => generateUniqueString()),
   isParticipating: integer('is_participating', { mode: 'boolean' }).notNull().default(false),
   favoriteChocolateId: integer('favorite_chocolate_id').references(() => pralines.id),
   generalFeedback: text('general_feedback'),
@@ -83,3 +94,11 @@ export const ratingsRelations = relations(ratings, ({ one }) => ({
     references: [pralines.id]
   })
 }))
+
+export const todos = sqliteTable('todos', {
+  id: integer('id').primaryKey(),
+  userId: integer('user_id').notNull(), // GitHub Id
+  title: text('title').notNull(),
+  completed: integer('completed').notNull().default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull()
+})

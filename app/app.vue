@@ -23,9 +23,8 @@ useHead({
 
 useSeoMeta({
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  title: 'Atidone',
-  description:
-    'A Nuxt demo hosted with edge-side rendering, authentication and queyring a Cloudflare D1 database',
+  title: 'Pralinen-Bewertungs-App',
+  description: 'App zur Bewertung von Pralinen',
   ogImage: '/social-image.png',
   twitterImage: '/social-image.png',
   twitterCard: 'summary_large_image'
@@ -63,7 +62,7 @@ const items = [
         <template #header>
           <h3 class="text-lg font-semibold leading-6">
             <NuxtLink to="/">
-              Atidone
+              Pralinen
             </NuxtLink>
           </h3>
           <UButton
@@ -80,17 +79,10 @@ const items = [
             class="flex flex-wrap -mx-2 sm:mx-0"
           >
             <UButton
-              to="/todos"
-              icon="i-lucide-list"
-              label="Todos"
-              :color="$route.path === '/todos' ? 'primary' : 'neutral'"
-              variant="ghost"
-            />
-            <UButton
-              to="/optimistic-todos"
-              icon="i-lucide-sparkles"
-              label="Optimistic Todos"
-              :color="$route.path === '/optimistic-todos' ? 'primary' : 'neutral'"
+              :to="`/admin/years/${new Date().getFullYear()}`"
+              icon="i-lucide-settings"
+              label="Administration"
+              :color="$route.path.includes('/admin/years') ? 'primary' : 'neutral'"
               variant="ghost"
             />
             <UDropdownMenu
@@ -117,19 +109,11 @@ const items = [
 
       <footer class="text-center mt-2">
         <NuxtLink
-          href="https://github.com/atinux/atidone"
+          href="https://github.com/pauldiepold/praline-poll"
           target="_blank"
           class="text-sm text-neutral-500 hover:text-neutral-700"
         >
           GitHub
-        </NuxtLink>
-        ·
-        <NuxtLink
-          href="https://twitter.com/atinux"
-          target="_blank"
-          class="text-sm text-neutral-500 hover:text-neutral-700"
-        >
-          Twitter
         </NuxtLink>
       </footer>
     </UContainer>

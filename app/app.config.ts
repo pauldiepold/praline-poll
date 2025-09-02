@@ -4,11 +4,11 @@ export default defineAppConfig({
       primary: 'emerald'
     },
     container: {
-      base: 'max-w-2xl'
+      base: 'max-w-4xl'
     },
     card: {
       slots: {
-        header: 'flex flex-wrap items-center justify-between'
+        header: 'flex flex-wrap gap-4 items-center justify-between'
       },
       body: 'space-y-4'
     }

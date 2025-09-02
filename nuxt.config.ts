@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@pinia/colada-nuxt'
   ],
+  ssr: false,
   devtools: {
     enabled: true
   },
