@@ -315,6 +315,7 @@ const handleImageError = (event: Event) => {
           icon="i-lucide-plus"
           label="Neue Praline hinzufügen"
           color="primary"
+          variant="outline"
           @click="isAddModalOpen = true"
         />
       </template>
@@ -324,7 +325,7 @@ const handleImageError = (event: Event) => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <UCard>
             <div class="text-center">
-              <div class="text-2xl font-bold text-primary">
+              <div class="text-2xl font-bold">
                 {{ pralines?.length || 0 }}
               </div>
               <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -449,8 +450,8 @@ const handleImageError = (event: Event) => {
               <div class="flex gap-2 pt-2 md:pt-0 md:flex-shrink-0">
                 <UButton
                   icon="i-lucide-edit"
-                  color="primary"
-                  variant="subtle"
+                  color="neutral"
+                  variant="outline"
                   size="sm"
                   class="flex-1 md:flex-none"
                   aria-label="Praline bearbeiten"
@@ -460,7 +461,7 @@ const handleImageError = (event: Event) => {
                 </UButton>
                 <UButton
                   icon="i-lucide-trash-2"
-                  color="neutral"
+                  color="error"
                   variant="outline"
                   size="sm"
                   class="flex-1 md:flex-none"

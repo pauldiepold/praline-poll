@@ -5,8 +5,9 @@
   --font-sans: 'Public Sans', sans-serif;
 }
 
-
 body {
+  -webkit-print-color-adjust:exact !important;
+  print-color-adjust:exact !important;
   @apply font-sans text-neutral-950 bg-neutral-50 dark:bg-neutral-950 dark:text-neutral-50;
 }
 

@@ -46,30 +46,35 @@ const yearDropdownItems = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
-    <!-- Jahr-Auswahl-Karte -->
-    <UCard>
-      <template #header>
-        <h2>
-          Verwaltung von {{ year }}
-        </h2>
-        <UDropdownMenu
-          :items="yearDropdownItems"
-        >
-          <UButton
-            :label="`${year}`"
-            color="primary"
-            variant="outline"
-            trailing-icon="i-lucide-chevron-down"
-            description="Jahr auswählen"
-            aria-label="Jahr auswählen"
-          />
-        </UDropdownMenu>
-      </template>
-    </UCard>
+  <NuxtLayout name="admin">
+    <template #header>
+      <AdminPersonPrintList :year="year" />
+    </template>
+    <div class="flex flex-col gap-8">
+      <!-- Jahr-Auswahl-Karte -->
+      <UCard>
+        <template #header>
+          <h2>
+            Verwaltung von {{ year }}
+          </h2>
+          <UDropdownMenu
+            :items="yearDropdownItems"
+          >
+            <UButton
+              :label="`${year}`"
+              color="primary"
+              variant="outline"
+              trailing-icon="i-lucide-chevron-down"
+              description="Jahr auswählen"
+              aria-label="Jahr auswählen"
+            />
+          </UDropdownMenu>
+        </template>
+      </UCard>
 
-    <AdminPralineManagement :year="year" />
+      <AdminPralineManagement :year="year" />
 
-    <AdminPersonManagement :year="year" />
-  </div>
+      <AdminPersonManagement :year="year" />
+    </div>
+  </NuxtLayout>
 </template>

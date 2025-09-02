@@ -20,13 +20,10 @@ useSeoMeta({
   twitterImage: '/social-image.png',
   twitterCard: 'summary_large_image'
 })
-
 </script>
 
 <template>
   <UApp>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <NuxtPage />
   </UApp>
 </template>

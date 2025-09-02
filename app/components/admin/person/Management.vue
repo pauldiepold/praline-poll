@@ -238,8 +238,8 @@ const columns: TableColumn<EnrichedPerson>[] = [
       return h('div', { class: 'flex items-center gap-2' }, [
         h(UButton, {
           'icon': 'i-lucide-edit',
-          'color': 'primary',
-          'variant': 'subtle',
+          'color': 'neutral',
+          'variant': 'outline',
           'size': 'sm',
           'aria-label': 'Person bearbeiten',
           onClick() {
@@ -310,7 +310,7 @@ const columns: TableColumn<EnrichedPerson>[] = [
           'uncheckedIcon': 'i-lucide-x',
           'checkedIcon': 'i-lucide-check',
           'size': 'sm',
-          'color': isParticipating ? 'primary' : 'neutral',
+          'color': 'neutral',
           'onUpdate:modelValue': (value: boolean) => {
             toggleParticipation({
               year: props.year,
@@ -392,6 +392,7 @@ const handleAddCancel = () => {
           icon="i-lucide-plus"
           label="Neue Person hinzufügen"
           color="primary"
+          variant="outline"
           @click="isAddModalOpen = true"
         />
       </template>
@@ -401,7 +402,7 @@ const handleAddCancel = () => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <UCard>
             <div class="text-center">
-              <div class="text-2xl font-bold text-primary">
+              <div class="text-2xl font-bold">
                 {{ activePersonYears.length }}
               </div>
               <div class="text-sm text-gray-600 dark:text-gray-400">

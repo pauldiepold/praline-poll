@@ -22,6 +22,12 @@ const items = [
 
 <template>
   <div>
+    <div class="hidden print:block text-black bg-white">
+      <slot name="header" />
+    </div>
+    <div class="hidden print:visible">
+      Hallo Welt
+    </div>
     <UContainer class="min-h-screen flex flex-col my-4 print:hidden">
       <div class="mb-2 text-right">
         <UButton
@@ -86,14 +92,16 @@ const items = [
         <slot />
       </UCard>
 
-      <footer class="text-center mt-2">
-        <NuxtLink
+      <footer class="text-center mt-6 mb-4">
+        <UButton
           href="https://github.com/pauldiepold/praline-poll"
           target="_blank"
-          class="text-sm text-neutral-500 hover:text-neutral-700"
+          icon="i-lucide-github"
+          variant="ghost"
+          class="hover:text-primary transition-colors"
         >
-          GitHub
-        </NuxtLink>
+          zum GitHub-Repo
+        </UButton>
       </footer>
     </UContainer>
   </div>
