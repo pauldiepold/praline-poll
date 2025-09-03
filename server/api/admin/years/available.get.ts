@@ -38,15 +38,7 @@ export default eventHandler(async (event) => {
       years.push(nextYear)
     }
 
-    // Aktuelles Jahr und nächstes Jahr für Rückgabe berechnen
-    const currentYear = new Date().getFullYear()
-    const nextYear = currentYear + 1
-
-    return {
-      years,
-      currentYear,
-      nextYear
-    }
+    return years as number[]
   }
   catch (error) {
     console.error('Fehler beim Abrufen der verfügbaren Jahre:', error)

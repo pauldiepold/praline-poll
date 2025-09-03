@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useAvailableYears } from '~/queries/available-years'
 
 definePageMeta({
   name: 'years-management-page',
@@ -22,16 +23,15 @@ if (isNaN(year) || year <= 2020 || year > 2050) {
 useHead({
   title: `Jahr ${year} - Verwaltung`
 })
-const { availableYearsQuery } = await import('~/queries/available-years')
 
 // Verfügbare Jahre abrufen
-const { data: availableYears } = useQuery(availableYearsQuery)
+const { availableYears } = useAvailableYears()
 
 // Jahr-Dropdown-Items
 const yearDropdownItems = computed(() => {
-  if (!availableYears.value?.years) return []
+  if (availableYears.value.status !== 'success') return []
 
-  return availableYears.value.years.map(yearValue => ({
+  return availableYears.value.data.map(yearValue => ({
     label: yearValue.toString(),
     value: yearValue,
     trailingIcon: yearValue === year ? 'i-lucide-check' : undefined,
