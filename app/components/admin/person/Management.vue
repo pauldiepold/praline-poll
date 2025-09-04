@@ -3,32 +3,13 @@ import { h, resolveComponent, ref, computed, reactive } from 'vue'
 import type { Ref } from 'vue'
 import type { TableColumn, FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
+import type { EnrichedPerson } from '~/queries/enriched-persons'
 
 const props = defineProps<{ year: number }>()
 
 const UButton = resolveComponent('UButton')
 // Queries und Mutations
 const { enrichedPersonsQuery } = await import('~/queries/enriched-persons')
-
-// Typen importieren
-type EnrichedPerson = {
-  id: number
-  firstName: string
-  lastName: string
-  createdAt: Date
-  updatedAt: Date
-  personYear: {
-    id: number
-    signature: string
-    isParticipating: boolean
-    favoriteChocolateId: number | null
-    generalFeedback: string | null
-    allergies: string | null
-    createdAt: Date
-    updatedAt: Date
-  } | null
-  hasPersonYear: boolean
-}
 
 const { data: enrichedPersons, isLoading: isLoadingPersons } = useQuery(enrichedPersonsQuery(props.year))
 
@@ -289,7 +270,17 @@ const columns: TableColumn<EnrichedPerson>[] = [
       if (!isParticipating || !signature) {
         return h('span', { class: 'text-gray-400 italic' }, 'Nicht verfügbar')
       }
-      return h('code', { class: 'bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono' }, signature)
+
+      const ratingUrl = `/rate/${signature}`
+      return h('a', {
+        href: ratingUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        class: 'inline-block hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors',
+        title: 'Bewertungsseite öffnen'
+      }, [
+        h('code', { class: 'bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono' }, signature)
+      ])
     }
   },
   {
@@ -377,6 +368,11 @@ const handleAddCancel = () => {
   isAddModalOpen.value = false
   Object.assign(addForm, { firstName: '', lastName: '' })
 }
+
+// PDF-Download Funktion
+const downloadPDF = () => {
+  window.print()
+}
 </script>
 
 <template>
@@ -388,13 +384,6 @@ const handleAddCancel = () => {
             Personen
           </h2>
         </div>
-        <UButton
-          icon="i-lucide-plus"
-          label="Neue Person hinzufügen"
-          color="primary"
-          variant="outline"
-          @click="isAddModalOpen = true"
-        />
       </template>
 
       <div class="flex flex-col gap-8">
@@ -420,6 +409,24 @@ const handleAddCancel = () => {
               </div>
             </div>
           </UCard>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col justify-end sm:flex-row gap-3">
+          <UButton
+            icon="i-lucide-file-text"
+            label="PDF herunterladen"
+            color="neutral"
+            variant="outline"
+            @click="downloadPDF"
+          />
+          <UButton
+            icon="i-lucide-plus"
+            label="Neue Person hinzufügen"
+            color="primary"
+            variant="outline"
+            @click="isAddModalOpen = true"
+          />
         </div>
 
         <div>

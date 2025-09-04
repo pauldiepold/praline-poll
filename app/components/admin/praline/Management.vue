@@ -407,14 +407,7 @@ const handleImageError = (event: Event) => {
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate mb-1">
                     {{ praline.name }}
                   </h3>
-                  <UBadge
-                    v-if="praline.isVegan"
-                    color="success"
-                    variant="soft"
-                    size="sm"
-                  >
-                    Vegan
-                  </UBadge>
+                  <PralineVeganBadge v-if="praline.isVegan" />
                 </div>
               </div>
 
@@ -423,14 +416,8 @@ const handleImageError = (event: Event) => {
                   <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
                     {{ praline.name }}
                   </h3>
-                  <UBadge
-                    v-if="praline.isVegan"
-                    color="success"
-                    variant="soft"
-                    size="sm"
-                  >
-                    Vegan
-                  </UBadge>
+
+                  <PralineVeganBadge v-if="praline.isVegan" />
                 </div>
 
                 <p
